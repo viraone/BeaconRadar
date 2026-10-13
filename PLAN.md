@@ -1,0 +1,220 @@
+# Origami — MVP Plan (Phase 0)
+
+> Working name: **Origami** (the workspace folder name). It is a placeholder, and renaming it is a find-and-replace.
+> Status: **awaiting approval.** Nothing will be scaffolded until this plan is OK'd.
+
+## 1. What we're building
+
+A user enters their company website. Origami then:
+
+1. Reads the site (only robots.txt-allowed pages) and infers a **company profile + ICP** that the user can edit.
+2. Recommends **3–5 plays** (one-click campaigns) based on that ICP.
+3. Runs an approved play as a **background research job** that turns live, licensed sources into a **leads table**. Every row carries source URLs.
+4. Optionally **enriches** leads with a work email through a pluggable **provider waterfall**. It stops at the first verified result.
+5. **Drafts** a short personalized email per lead. The email always has an opt-out line and checks the suppression list. **Nothing is sent in v1.** Users can review drafts, copy them, and export CSV.
+
+Hard rules, enforced in code as well as in prompts:
+- Never fabricate people, emails, or facts. A field that can't be grounded in a fetched source is stored as `null` and rendered as **"not found"**.
+- Every lead has `source_urls.length >= 1` (DB check constraint plus a write-path assertion).
+- No LinkedIn or other scraping-prohibited sites. Use official APIs, respect robots.txt, and send an honest User-Agent.
+
+## 2. Stack (with reasons)
+
+| Concern | Choice | Why |
+|---|---|---|
+| App framework | **Next.js (App Router, latest stable) + TypeScript + Tailwind** | Your preference. Server Actions and Route Handlers cover the API with no separate backend. |
+| DB | **Postgres via Supabase**. Local dev runs `supabase start` (Docker), which is already installed. | One local stack gives Postgres, Auth, and Studio. The same thing runs hosted on Supabase later. |
+| ORM | **Drizzle** (+ drizzle-kit migrations) | Lighter than Prisma, with no query-engine binary. It reads like SQL, so row locks and `ON CONFLICT` are easy, and that matters for credits. It talks to Supabase Postgres directly. |
+| Auth | **Supabase Auth** (email magic link + optional Google OAuth) via `@supabase/ssr` | It comes with the DB stack. Clerk would be a second vendor plus keys. |
+| LLM | **Anthropic Claude** through `src/lib/llm/llm.ts`. The model comes from env (`LLM_MODEL`, default `claude-opus-5-5`). | Typed structured outputs (JSON schema validation) suit ICP and lead extraction. The wrapper also has a `mock` provider, so the app runs with no key. Swapping vendors means rewriting one file. |
+| Background jobs | **A small Postgres-backed queue** (a `jobs` table, `FOR UPDATE SKIP LOCKED`, a worker started with `npm run worker`) | No extra service or account is needed, and it's easy to test. It sits behind `enqueue()` and `registerHandler()`, so it can move to Inngest or Trigger.dev later without touching play code. |
+| Web search | **A pluggable `SearchProvider`**, recommended **Tavily** or **Brave Search API**, plus a `mock` provider with fixtures | Both are licensed search APIs with free dev tiers. **You pick one** (see §9). |
+| Job boards | **Official public ATS job-board APIs**: Greenhouse Job Board API, Lever Postings API, Ashby public job board API | These are public, documented, and meant for reading postings. Search finds the companies (e.g. `site:boards.greenhouse.io "RevOps Manager"`), and the ATS API confirms the posting and gives a stable source URL. |
+| Local businesses | **Google Places API (New)**, used after Phase 3 | Official API. It needs a Google Cloud key with billing, so it stays **off until you approve it**. |
+| Email enrichment | `EmailProvider` interface + waterfall. **Two mock providers** in v1. | There are no paid keys in dev. Real providers (e.g. Hunter, Apollo, ZeroBounce) plug in later, with your approval. |
+| HTML parsing | `cheerio` | Small and fast. No headless browser and no JS execution. |
+| robots.txt | `robots-parser` | Tiny, well-known, correct. |
+| Validation | `zod` | Shared schemas for forms, LLM outputs, and job payloads. |
+| Tests | **Vitest** | Fast and TS-native. |
+| CSV | Hand-written RFC 4180 serializer (~30 lines) | Not worth a dependency, and easy to unit-test (including CSV-injection escaping). |
+
+**Dependencies needing your OK** (all free and open source unless noted):
+`next react react-dom tailwindcss drizzle-orm drizzle-kit postgres @supabase/supabase-js @supabase/ssr @anthropic-ai/sdk zod cheerio robots-parser vitest tsx`.
+I'll avoid anything else large unless I ask first.
+
+**Paid or keyed services needing your OK:** Anthropic API (usage-billed), one search API (free tier to start), and Google Places (billing account, later). Everything works with `*_PROVIDER=mock` until you add keys.
+
+## 3. Architecture
+
+```
+Browser (Next.js pages, React Server Components)
+   │  server actions / route handlers (auth-checked, workspace-scoped)
+   ▼
+Next.js server ──► Postgres (Supabase): app tables + jobs queue + credit ledger
+   │                    ▲
+   │ enqueue(job)       │ claim job (SKIP LOCKED), write leads, charge credits
+   ▼                    │
+Worker process (npm run worker) ── uses ──► lib/research  (safe fetcher, robots, search, ATS APIs)
+                                     ├──► lib/llm       (llm.ts: anthropic | mock)
+                                     ├──► lib/enrichment (waterfall over EmailProviders)
+                                     └──► lib/credits    (estimate, charge — idempotent)
+```
+
+Main flows:
+
+1. **Analyze site.** `POST /analyze {url}` creates a `site_analysis` job. The worker fetches up to ~6 same-domain pages (home, about, pricing, product, customers), each checked against robots.txt. It extracts the text, and the LLM returns a `CompanyProfile` (zod-validated). The **ICP parser** normalizes the result and rejects bad output: it clamps arrays, dedupes, maps industries and sizes to enums, and drops empty fields. The user edits the profile in a form.
+2. **Recommend plays.** Rules come first, then the LLM. The ICP decides which play types fit, and the LLM fills in params (e.g. which roles signal buying intent). The output is 3–5 `plays` in status `draft`, each with a `credit_estimate`.
+3. **Run a play.** The user approves the play. The server checks the balance against the estimate, sets status `queued`, and enqueues it. The worker then searches, confirms via official APIs, and extracts. It **grounds** each field, and anything not grounded becomes "not found". It inserts the leads, charges per lead actually found, and sets status `completed` (or `partial` or `failed`).
+4. **Enrich.** This runs on the selected leads. The waterfall tries provider A, then provider B, and stops at the first `verified` result. Credits are charged only for found or verified results.
+5. **Draft outreach.** The LLM writes a draft using **only** facts already on the lead row (fit_reason, sources). The server appends a fixed footer with the opt-out line and the sender's postal address. Suppressed leads are skipped and labeled.
+
+**Grounding check (anti-fabrication).** When the LLM extracts a company, person, or title from a fetched page, the value must appear in that page's text (normalized substring match). Otherwise it is dropped to `null`. The LLM prompt also says to return null rather than guess. The code check is the real guarantee.
+
+**Prompt-injection posture.** Crawled page text goes into the LLM only as clearly delimited data. The LLM has **no tools with side effects**, and output is schema-validated. A malicious page can at worst produce a wrong field, and the grounding check catches most of those.
+
+## 4. Data model (Drizzle, Postgres)
+
+All app tables are scoped by `workspace_id`. Access goes through server code that checks membership. Row-level security (RLS) is enabled on every table as defense in depth, and server code uses the Supabase JWT user for its checks.
+
+| Table | Key columns |
+|---|---|
+| `users` | `id` (= `auth.users.id`), `email`, `name`, `created_at` |
+| `workspaces` | `id`, `name`, `plan` (`free`\|`pro`), `sender_name`, `sender_company`, `sender_postal_address`, `created_at` |
+| `workspace_members` | `workspace_id`, `user_id`, `role` (`owner`\|`member`) |
+| `company_profiles` | `id`, `workspace_id`, `site_url`, `summary`, `icp` (jsonb, zod-typed), `source_urls[]`, `status`, `updated_at` |
+| `plays` | `id`, `workspace_id`, `company_profile_id`, `type` (`hiring_signal`\|`decision_makers`\|`local_business`), `title`, `rationale`, `params` (jsonb), `status` (`draft`\|`queued`\|`running`\|`completed`\|`partial`\|`failed`), `credit_estimate`, `credits_spent`, `row_limit`, `error`, timestamps |
+| `leads` | `id`, `play_id`, `workspace_id`, `company`, `company_domain`, `person`, `title`, `email`, `email_status` (`unknown`\|`not_found`\|`unverified`\|`verified`\|`suppressed`), `email_provider`, `source_urls text[] NOT NULL CHECK (cardinality >= 1)`, `fit_reason`, `signal` (jsonb, e.g. job posting), `created_at`. Unique on (`play_id`, `company_domain`, `person`) for dedupe. |
+| `credit_ledger` | `id`, `workspace_id`, `delta` (int, + grant / − spend), `reason`, `action` (`search_result`\|`enrich_found`\|`verify`\|`grant`\|…), `ref_type`, `ref_id`, `idempotency_key UNIQUE`, `created_at` |
+| `outreach_drafts` | `id`, `lead_id`, `workspace_id`, `subject`, `body`, `status` (`draft`\|`approved`\|`discarded`), `model`, timestamps |
+| `suppression_list` | `id`, `workspace_id`, `email` (nullable), `domain` (nullable), `reason`, `created_at`. Exactly one of email or domain is set. |
+| `jobs` | `id`, `type`, `payload` jsonb, `status`, `attempts`, `run_after`, `locked_at`, `last_error`, timestamps |
+
+The balance is `SUM(delta)` over a workspace's ledger, computed inside a transaction that holds a row lock on `workspaces`. Every charge has a deterministic `idempotency_key` (e.g. `lead:{id}:search_result`). A retried job therefore can't double-charge.
+
+## 5. Credits
+
+- **One config file:** `src/config/credits.ts` holds per-action costs (`search_result`, `enrich_found`, `verify`, `draft`), plan limits (`free: { rowsPerTable: 30, export: false }`), and the signup grant.
+- **Estimate** = `min(row_limit, plan.rowsPerTable) × costPerRow` for the play type. It is shown as **"up to N credits"** before approval.
+- **Charge only for what's found.** Searches that return nothing cost 0. A lead is charged when it's inserted, an email when one is found, a verification when the result is verified.
+- **Never go negative.** The run stops early (status `partial`) when the balance can't cover the next row.
+- **Free tier:** at most 30 rows per leads table, CSV export disabled (the button shows an upgrade notice), and a starting grant of credits. **No billing in v1.** `plan` is set by the seed script or SQL.
+- Tests cover the estimate math, charge idempotency, the no-negative guard, plan limits, and the export gate.
+
+## 6. Compliance (CAN-SPAM / GDPR-friendly; not legal advice)
+
+- No auto-send in v1.
+- A fixed footer goes on **every** draft: an opt-out sentence and the sender's postal address, which CAN-SPAM requires. The postal address is collected in workspace settings. Drafts are blocked until it's set.
+- **Suppression list** by email or domain. It applies at draft time and at export time, and suppressed rows are labeled. Users can add entries by hand or paste them in bulk.
+- Only business contact data is stored. Users can delete a lead or a whole play. Every lead has source URLs (provenance) to support data-subject requests.
+- The fetcher identifies itself (`Origami-Bot/0.1 (+contact URL)`), obeys robots.txt, rate-limits per host, enforces a domain denylist (linkedin.com, facebook.com, etc.), and never logs in or runs page JS.
+
+## 7. Folder layout
+
+```
+.
+├── PLAN.md  DECISIONS.md  README.md  .env.example
+├── drizzle.config.ts
+├── supabase/                    # supabase CLI config (local stack)
+├── drizzle/                     # generated SQL migrations
+├── scripts/
+│   ├── worker.ts                # job worker entry (npm run worker)
+│   └── seed.ts                  # demo workspace, profile, plays, leads
+├── src/
+│   ├── app/
+│   │   ├── page.tsx             # landing + domain input
+│   │   ├── login/               # magic link
+│   │   ├── auth/callback/       # supabase auth callback
+│   │   └── (app)/               # authed area
+│   │       ├── profile/         # view/edit company profile + ICP
+│   │       ├── plays/           # recommendations, approve, status
+│   │       ├── plays/[id]/      # leads table, enrich, export
+│   │       ├── drafts/          # outreach review
+│   │       └── settings/        # sender info, suppression list, credits ledger
+│   ├── config/credits.ts
+│   ├── lib/
+│   │   ├── db/{schema.ts,client.ts}
+│   │   ├── auth/                # supabase server/client helpers, requireWorkspace()
+│   │   ├── llm/llm.ts           # the single LLM wrapper (+ mock)
+│   │   ├── jobs/{queue.ts,handlers.ts}
+│   │   ├── research/
+│   │   │   ├── fetcher.ts       # SSRF-safe fetch, robots, rate limit, denylist
+│   │   │   ├── extract.ts       # html → text (cheerio)
+│   │   │   ├── search/{types.ts,tavily.ts,brave.ts,mock.ts}
+│   │   │   └── ats/{greenhouse.ts,lever.ts,ashby.ts}
+│   │   ├── profile/{analyzer.ts,icp.ts}   # icp.ts = ICP parser
+│   │   ├── plays/{registry.ts,recommend.ts,hiring.ts}
+│   │   ├── credits/{ledger.ts,estimate.ts}
+│   │   ├── enrichment/{types.ts,waterfall.ts,providers/mockA.ts,providers/mockB.ts}
+│   │   ├── outreach/{draft.ts,footer.ts,suppression.ts}
+│   │   └── csv.ts
+│   └── components/
+└── tests/  (unit tests colocated as *.test.ts; fixtures in tests/fixtures)
+```
+
+## 8. Environment variables (`.env.example`)
+
+```
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+CRAWLER_CONTACT_URL=http://localhost:3000/bot     # shown in User-Agent
+
+# Supabase (values printed by `supabase start`)
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=                        # server/worker only
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+# LLM
+LLM_PROVIDER=mock                                 # mock | anthropic
+LLM_MODEL=claude-opus-5-5
+ANTHROPIC_API_KEY=
+
+# Research
+SEARCH_PROVIDER=mock                              # mock | tavily | brave
+TAVILY_API_KEY=
+BRAVE_SEARCH_API_KEY=
+GOOGLE_PLACES_API_KEY=                            # later, needs approval
+
+# Enrichment
+ENRICHMENT_PROVIDERS=mockA,mockB                  # waterfall order
+```
+
+## 9. Phases and done-when
+
+| Phase | Deliverable | Done when |
+|---|---|---|
+| 1 | Scaffold, Supabase Auth, Drizzle schema + migration, landing page with domain input | You can sign in locally, the tables exist, and the domain input validates and saves. |
+| 2 | Site analyzer + ICP parser + edit UI | Entering a URL produces an editable profile with sources (mock or real LLM). The ICP parser is tested. |
+| 3 | Plays recommender + **hiring-signal play** end to end | Approving a play runs the job and fills real leads from ATS APIs, each with a posting URL. |
+| 4 | Leads table, source links, CSV export (plan-gated), credits ledger UI | Balance and ledger are visible, charges match found rows, and credit logic is tested. |
+| 5 | Enrichment waterfall + 2 mock providers | Waterfall order and stop-at-verified are tested. Mock emails use a reserved `.example` domain. |
+| 6 | Outreach drafting + review UI + suppression list | Every draft has the footer and suppressed leads are skipped. Drafts can be copied and exported. |
+| 7 | Tests, README, .env.example, seed script | `npm test` is green and `npm run seed` gives a working demo with no keys. |
+
+After each phase: a short summary, small commits, and I stop for your review.
+
+## 10. Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| **SSRF.** User-supplied URLs could make us fetch internal addresses. | Only http/https. Resolve DNS and block private, loopback, link-local, and metadata IPs, re-checking on every redirect. Cap redirects, size (~2 MB), and time (10 s). |
+| **LLM fabrication** of people, emails, or facts | A code grounding check against the source text, null becomes "not found", schema-validated outputs, and source URLs required by a DB constraint. |
+| **Prompt injection** from crawled pages | Content is delimited as data, the LLM has no side-effect tools, and output passes the schema plus grounding check. |
+| **Terms of service and robots.txt** | Official APIs first, robots-checked fetches, a denylist (LinkedIn etc.), per-host rate limits, no login walls. |
+| Few or no "decision-maker" names without LinkedIn | Use the companies' own team/about pages and press pages when robots allows, otherwise "not found". Enrichment providers fill the gap later. **Expect sparse person data in v1.** |
+| Search and LLM costs | Mock providers by default, per-run caps, row limits, and logged token usage per job. |
+| Credit race conditions or double-charging | Row lock on the workspace during a charge, a unique idempotency key on each ledger entry, and tests. |
+| Long jobs on serverless hosting | A separate worker process now. The queue interface allows Inngest or Trigger.dev later. Hosting is out of scope for the MVP. |
+| Compliance gaps | Footer + postal address enforced, suppression list, no sending, deletion paths. A legal review is still needed before real outreach. |
+| ATS coverage bias (Greenhouse/Lever/Ashby skew toward tech companies) | Fine for a B2B tech ICP. Other job sources can be added behind the same interface. |
+
+## 11. Out of scope for v1
+
+Sending email, sequences, billing/Stripe, team invites UI, CRM sync, LinkedIn anything, headless-browser scraping, production deployment.
+
+## 12. Decisions I need from you
+
+1. **Approve the stack and dependency list** in §2 (Supabase local + Drizzle + Postgres queue + Anthropic).
+2. **Search provider:** Tavily or Brave? Mock is used until a key is added.
+3. **Anthropic API** as the LLM. The model is set in env, defaulting to `claude-opus-5-5`.
+4. **App name**, or keep "Origami" for now.
