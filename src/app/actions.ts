@@ -4,16 +4,16 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth/server";
 import { ensureUserAndWorkspace } from "@/lib/auth/workspace";
+import { startSiteAnalysis } from "@/lib/profile/analysis-job";
+import { PENDING_SITE_COOKIE } from "@/lib/profile/pending-cookie";
 import { saveSiteUrl } from "@/lib/profile/save";
 import { normalizeSiteUrl } from "@/lib/profile/url";
-import { PENDING_SITE_COOKIE } from "@/lib/profile/pending-cookie";
-
 
 export type StartState = { error?: string } | undefined;
 
 /**
  * Landing-page form. Signed-out users get the URL parked in a short-lived cookie
- * and are sent to sign in; the profile page picks it up after login.
+ * and are sent to sign in; /auth/confirm picks it up after login.
  */
 export async function startWithSite(_prev: StartState, formData: FormData): Promise<StartState> {
   let site;
@@ -31,6 +31,7 @@ export async function startWithSite(_prev: StartState, formData: FormData): Prom
   }
 
   const ctx = await ensureUserAndWorkspace(user);
-  await saveSiteUrl(ctx.workspace.id, site);
-  redirect("/profile");
+  const { profile, created } = await saveSiteUrl(ctx.workspace.id, site);
+  if (created) await startSiteAnalysis(profile.id);
+  redirect(`/profile/${profile.id}`);
 }

@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/auth/server";
 import { ensureUserAndWorkspace } from "@/lib/auth/workspace";
 import { PENDING_SITE_COOKIE } from "@/lib/profile/pending-cookie";
+import { startSiteAnalysis } from "@/lib/profile/analysis-job";
 import { saveSiteUrl } from "@/lib/profile/save";
 import { normalizeSiteUrl } from "@/lib/profile/url";
 
@@ -51,8 +52,9 @@ export async function GET(request: NextRequest) {
     try {
       const site = normalizeSiteUrl(pending);
       const ctx = await ensureUserAndWorkspace({ id: userId, email });
-      await saveSiteUrl(ctx.workspace.id, site);
-      next = `/profile?saved=${encodeURIComponent(site.domain)}`;
+      const { profile, created } = await saveSiteUrl(ctx.workspace.id, site);
+      if (created) await startSiteAnalysis(profile.id);
+      next = `/profile/${profile.id}`;
     } catch {
       // A bad cookie should never block sign-in.
     }
