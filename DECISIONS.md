@@ -27,3 +27,10 @@ Ambiguities resolved with the simplest workable option. Newest at the bottom.
 | 21 | 2026-10-13 | Leads without a named person can't be enrolled | A LinkedIn step needs a person, and we never make one up. |
 | 22 | 2026-10-13 | `objection_type` values follow the book's generic objection list (Ch. 7) plus `other` | Grounded in the source. |
 | 23 | 2026-10-13 | Phases renumbered: 6 drafting + checks, 7 sequences + tasks + limits, 8 replies + dashboard, 9 tests/README/seed | Fits the new features into the plan without bloating one phase. |
+| 24 | 2026-10-15 | Local Supabase runs on ports 55321–55324 (not the 54321 defaults) | Another local project ("beezer") already holds the defaults. Documented in README. |
+| 25 | 2026-10-15 | Next.js 16 with `cacheComponents` on (the scaffold default). Dynamic segments (landing, login, the signed-in layout) declare `instant = false` and call `connection()` first | Next 16 validates static shells; every authed page reads cookies and the DB, so they're request-time by design. |
+| 26 | 2026-10-15 | Magic-link email uses a custom template that appends `token_hash` to the app's redirect URL; `/auth/confirm` accepts both `token_hash` and PKCE `code` | Works across browsers and devices and preserves the `next` path. |
+| 27 | 2026-10-15 | A URL typed before sign-in is parked in a 30-minute httpOnly cookie and saved by `/auth/confirm` after the session is created | Lets a visitor start from the landing page without an account. |
+| 28 | 2026-10-15 | `users.id` mirrors `auth.users.id` but has no foreign key to the auth schema; the row is upserted on first authed request | Keeps the public schema self-contained for Drizzle and tests. |
+| 29 | 2026-10-15 | RLS is enabled with no policies on every public table; the app connects with the Postgres role via `DATABASE_URL` and checks membership in code | Blocks direct REST access while keeping one authorization path. |
+| 30 | 2026-10-15 | Supabase publishable/secret keys are used (`sb_publishable_…`, `sb_secret_…`) instead of legacy anon/service-role JWTs | Current Supabase convention; both work locally. |

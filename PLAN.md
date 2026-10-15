@@ -1,7 +1,7 @@
 # Origami — MVP Plan (Phase 0)
 
 > Working name: **Origami** (the workspace folder name). It is a placeholder, and renaming it is a find-and-replace.
-> Status: **awaiting approval.** Nothing will be scaffolded until this plan is OK'd.
+> Status: **approved 2026-10-15.** Phase 1 complete; see the phase table in §9.
 
 ## 1. What we're building
 
@@ -214,11 +214,11 @@ All of these rules live in `src/config/outreach.ts` and are enforced in `src/lib
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 CRAWLER_CONTACT_URL=http://localhost:3000/bot     # shown in User-Agent
 
-# Supabase (values printed by `supabase start`)
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=                        # server/worker only
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+# Supabase (values printed by `supabase start`; ports 55321-55324 to avoid clashing with other local projects)
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:55321
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=                              # server/worker only
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres
 
 # LLM
 LLM_PROVIDER=mock                                 # mock | anthropic
