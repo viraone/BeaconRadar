@@ -15,6 +15,13 @@
       "when": 1792100613380,
       "tag": "0001_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792103990419,
+      "tag": "0002_profile_analysis_meta",
+      "breakpoints": true
     }
   ]
 }

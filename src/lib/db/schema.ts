@@ -92,6 +92,9 @@ export const companyProfiles = pgTable("company_profiles", {
   sourceUrls: text("source_urls").array().notNull().default(sql`'{}'::text[]`),
   status: profileStatusEnum("status").notNull().default("pending"),
   error: text("error"),
+  /** "mock" or the model id that produced the current analysis. */
+  analysisModel: text("analysis_model"),
+  analyzedAt: timestamp("analyzed_at", { withTimezone: true }),
   ...timestamps,
 }, (t) => [index("company_profiles_workspace_idx").on(t.workspaceId)]);
 

@@ -19,6 +19,8 @@ const serverSchema = z.object({
   BRAVE_SEARCH_API_KEY: z.string().optional(),
   GOOGLE_PLACES_API_KEY: z.string().optional(),
   ENRICHMENT_PROVIDERS: z.string().default("mockA,mockB"),
+  /** Run queued jobs inside the web process right after enqueue (dev convenience). */
+  JOBS_INLINE: z.enum(["true", "false"]).default(process.env.NODE_ENV === "production" ? "false" : "true"),
 });
 
 let cached: z.infer<typeof serverSchema> | undefined;
