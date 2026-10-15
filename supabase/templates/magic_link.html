@@ -1,0 +1,6 @@
+<h2>Sign in to Origami</h2>
+<p>Click the link below to sign in. It expires in one hour and works once.</p>
+<!-- The app always passes emailRedirectTo = {APP_URL}/auth/confirm?next=..., so we append the
+     token to it to keep `next`. If a client omits redirect_to, fall back to the site URL. -->
+<p><a href="{{ if .RedirectTo }}{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email{{ else }}{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email{{ end }}">Sign in to Origami</a></p>
+<p>If you didn't request this, you can ignore this email.</p>
