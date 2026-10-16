@@ -1,7 +1,7 @@
 # Origami — MVP Plan (Phase 0)
 
 > Working name: **Origami** (the workspace folder name). It is a placeholder, and renaming it is a find-and-replace.
-> Status: **approved 2026-10-15.** Phases 1–4 complete; see the phase table in §9.
+> Status: **approved 2026-10-15.** Phases 1–5 complete; see the phase table in §9.
 
 ## 1. What we're building
 
