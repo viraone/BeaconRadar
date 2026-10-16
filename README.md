@@ -43,6 +43,7 @@ For real analysis the project uses **DeepSeek**: set `LLM_PROVIDER=deepseek` and
 | `npm run seed` | Demo data (Phase 9) |
 | `npx tsx --env-file=.env.local scripts/smoke-plays.ts <profileId>` | Dev check: recommend plays for a profile and run the first hiring play |
 | `npx tsx --env-file=.env.local scripts/smoke-enrich.ts <playId>` | Dev check: add contacts to a play's leads and run the enrichment waterfall |
+| `npx tsx --env-file=.env.local scripts/smoke-drafts.ts <playId>` | Dev check: draft a first touch and a follow-up for a play's leads |
 
 ## Rules this codebase follows
 
