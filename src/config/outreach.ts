@@ -73,3 +73,15 @@ If you'd rather not hear from me again, reply "unsubscribe" and I'll stop.`;
 
 /** The line that separates message from footer (RFC 3676 signature delimiter). */
 export const FOOTER_DELIMITER = "--";
+
+/** The sequence every workspace starts with. Waits are days after the previous step is marked done. */
+export const DEFAULT_SEQUENCE = {
+  name: "LinkedIn first, then email",
+  steps: [
+    { position: 1, channel: "linkedin_connect" as const, waitDays: 0, intent: "first touch" },
+    { position: 2, channel: "email" as const, waitDays: 7, intent: "follow-up with something new" },
+  ],
+};
+
+/** Local hour at which a waited step becomes due. */
+export const TASK_DUE_HOUR = 9;
