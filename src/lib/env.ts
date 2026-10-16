@@ -11,8 +11,11 @@ const serverSchema = z.object({
   SUPABASE_SECRET_KEY: z.string().min(1),
   DATABASE_URL: z.string().min(1),
   CRAWLER_CONTACT_URL: z.string().default("http://localhost:3000/bot"),
-  LLM_PROVIDER: z.enum(["mock", "anthropic"]).default("mock"),
-  LLM_MODEL: z.string().default("claude-opus-5-5"),
+  LLM_PROVIDER: z.enum(["mock", "deepseek", "anthropic"]).default("mock"),
+  /** Optional; each provider has a default model (see DEFAULT_MODELS in lib/llm/llm.ts). */
+  LLM_MODEL: z.string().trim().min(1).optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_BASE_URL: z.url().default("https://api.deepseek.com"),
   ANTHROPIC_API_KEY: z.string().optional(),
   SEARCH_PROVIDER: z.enum(["mock", "tavily", "brave"]).default("mock"),
   TAVILY_API_KEY: z.string().optional(),

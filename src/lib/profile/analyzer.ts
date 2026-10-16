@@ -1,5 +1,5 @@
 import type { Icp } from "@/lib/db/schema";
-import { getLlm, type LlmProvider } from "@/lib/llm/llm";
+import { getLlm, type LlmProvider, type ProviderName } from "@/lib/llm/llm";
 import { extractPage, pickInformativeLinks, type ExtractedPage } from "@/lib/research/extract";
 import { FetchBlockedError, getFetcher, type SafeFetcher } from "@/lib/research/fetcher";
 import { parseIcp, rawCompanyProfileSchema, type RawCompanyProfile } from "./icp";
@@ -14,7 +14,7 @@ export type AnalysisResult = {
   /** Pages we tried but could not read, with the reason. */
   skipped: Array<{ url: string; reason: string }>;
   model: string;
-  provider: "anthropic" | "mock";
+  provider: ProviderName;
 };
 
 export type AnalyzeOptions = {

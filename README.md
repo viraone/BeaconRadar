@@ -20,7 +20,9 @@ npm run dev                       # http://localhost:3000
 
 Sign-in emails go to the local Mailpit inbox at http://127.0.0.1:55324. Supabase Studio is at http://127.0.0.1:55323.
 
-No API keys are needed to develop. The LLM, search and enrichment providers default to `mock`.
+No API keys are needed to develop: set `LLM_PROVIDER=mock` and the search and enrichment providers default to `mock`.
+
+For real analysis the project uses **DeepSeek**: set `LLM_PROVIDER=deepseek` and paste your key into `DEEPSEEK_API_KEY` in `.env.local`. The default model is `deepseek-flash`; set `LLM_MODEL=deepseek-v4-pro` for the stronger model. Anthropic is also wired up (`LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`).
 
 ## Scripts
 

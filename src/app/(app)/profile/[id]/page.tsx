@@ -50,8 +50,8 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
       )}
       {profile.analysisModel === "mock" && profile.status === "ready" && (
         <Notice>
-          This profile came from the <strong>mock analyzer</strong>, which only echoes text found on the site. Add an Anthropic API key and set
-          LLM_PROVIDER=anthropic in .env.local for a real analysis, then click Re-analyze.
+          This profile came from the <strong>mock analyzer</strong>, which only echoes text found on the site. Set LLM_PROVIDER=deepseek
+          and DEEPSEEK_API_KEY in .env.local for a real analysis, then click Re-analyze.
         </Notice>
       )}
 

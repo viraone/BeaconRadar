@@ -31,7 +31,7 @@ Hard rules, enforced in code as well as in prompts:
 | DB | **Postgres via Supabase**. Local dev runs `supabase start` (Docker), which is already installed. | One local stack gives Postgres, Auth, and Studio. The same thing runs hosted on Supabase later. |
 | ORM | **Drizzle** (+ drizzle-kit migrations) | Lighter than Prisma, with no query-engine binary. It reads like SQL, so row locks and `ON CONFLICT` are easy, and that matters for credits. It talks to Supabase Postgres directly. |
 | Auth | **Supabase Auth** (email magic link + optional Google OAuth) via `@supabase/ssr` | It comes with the DB stack. Clerk would be a second vendor plus keys. |
-| LLM | **Anthropic Claude** through `src/lib/llm/llm.ts`. The model comes from env (`LLM_MODEL`, default `claude-opus-5-5`). | Typed structured outputs (JSON schema validation) suit ICP and lead extraction. The wrapper also has a `mock` provider, so the app runs with no key. Swapping vendors means rewriting one file. |
+| LLM | **DeepSeek** (`deepseek-flash` by default, `deepseek-v4-pro` optional) through `src/lib/llm/llm.ts`, using its OpenAI-compatible JSON mode. Anthropic remains available as a second provider. | Your choice (2026-10-15). DeepSeek doesn't enforce a JSON schema server-side, so the wrapper puts the schema in the prompt, validates with zod and retries once. A `mock` provider means the app runs with no key. Swapping vendors is one file. |
 | Background jobs | **A small Postgres-backed queue** (a `jobs` table, `FOR UPDATE SKIP LOCKED`, a worker started with `npm run worker`) | No extra service or account is needed, and it's easy to test. It sits behind `enqueue()` and `registerHandler()`, so it can move to Inngest or Trigger.dev later without touching play code. |
 | Web search | **A pluggable `SearchProvider`**, recommended **Tavily** or **Brave Search API**, plus a `mock` provider with fixtures | Both are licensed search APIs with free dev tiers. **You pick one** (see §9). |
 | Job boards | **Official public ATS job-board APIs**: Greenhouse Job Board API, Lever Postings API, Ashby public job board API | These are public, documented, and meant for reading postings. Search finds the companies (e.g. `site:boards.greenhouse.io "RevOps Manager"`), and the ATS API confirms the posting and gives a stable source URL. |
@@ -48,7 +48,7 @@ Hard rules, enforced in code as well as in prompts:
 `next react react-dom tailwindcss drizzle-orm drizzle-kit postgres @supabase/supabase-js @supabase/ssr @anthropic-ai/sdk zod cheerio robots-parser vitest tsx`.
 I'll avoid anything else large unless I ask first.
 
-**Paid or keyed services needing your OK:** Anthropic API (usage-billed), one search API (free tier to start), and Google Places (billing account, later). Everything works with `*_PROVIDER=mock` until you add keys.
+**Paid or keyed services needing your OK:** DeepSeek API (usage-billed; decided), one search API (free tier to start), and Google Places (billing account, later). Everything works with `*_PROVIDER=mock` until you add keys.
 
 ## 3. Architecture
 
@@ -221,8 +221,10 @@ SUPABASE_SECRET_KEY=                              # server/worker only
 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:55322/postgres
 
 # LLM
-LLM_PROVIDER=mock                                 # mock | anthropic
-LLM_MODEL=claude-opus-5-5
+LLM_PROVIDER=deepseek                             # mock | deepseek | anthropic
+LLM_MODEL=deepseek-flash                          # optional; provider default if empty
+DEEPSEEK_API_KEY=
+DEEPSEEK_BASE_URL=https://api.deepseek.com
 ANTHROPIC_API_KEY=
 
 # Research
@@ -278,7 +280,7 @@ Automated email sending (pending §12 item 5), any LinkedIn automation, inbox or
 
 1. **Approve the stack and dependency list** in §2 (Supabase local + Drizzle + Postgres queue + Anthropic).
 2. **Search provider:** Tavily or Brave? Mock is used until a key is added.
-3. **Anthropic API** as the LLM. The model is set in env, defaulting to `claude-opus-5-5`.
+3. ~~Anthropic API as the LLM~~ Decided: **DeepSeek** (see §2).
 4. **App name**, or keep "Origami" for now.
 5. **Email "Approve".** I've built it as approve, then copy or open in your mail app, with no provider. Do you want real sending from the app in v1? If so, which provider: Gmail API, Resend or SES? That adds a keyed service and domain setup.
 6. **Belief stages.** Keep your 5 stages as Origami's own rule, given that they aren't from *Founding Sales*?
