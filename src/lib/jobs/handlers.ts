@@ -3,6 +3,8 @@ import { db, schema } from "@/lib/db/client";
 import { analyzeSite } from "@/lib/profile/analyzer";
 import { runPlay } from "@/lib/plays/runner";
 import { enrichLeads } from "@/lib/enrichment/runner";
+import { draftForLeads } from "@/lib/outreach/runner";
+import type { Channel } from "@/lib/outreach/validators";
 import { registerHandler } from "./queue";
 
 /**
@@ -56,6 +58,13 @@ export const JOB_ENRICH_LEADS = "enrich_leads";
 registerHandler<{ workspaceId: string; leadIds: string[] }>(JOB_ENRICH_LEADS, async ({ workspaceId, leadIds }) => {
   const summary = await enrichLeads(workspaceId, leadIds);
   console.log(`[enrich] ${JSON.stringify(summary)}`);
+});
+
+export const JOB_DRAFT_OUTREACH = "draft_outreach";
+
+registerHandler<{ workspaceId: string; leadIds: string[]; channel: Channel }>(JOB_DRAFT_OUTREACH, async ({ workspaceId, leadIds, channel }) => {
+  const summary = await draftForLeads(workspaceId, leadIds, channel ?? "email");
+  console.log(`[draft] ${JSON.stringify(summary)}`);
 });
 
 export const handlersLoaded = true;
