@@ -15,6 +15,9 @@ jobs:
       SUPABASE_SECRET_KEY: ci-placeholder
       LLM_PROVIDER: mock
       SEARCH_PROVIDER: mock
+      # The db client is created lazily (no connection at import time); integration
+      # tests probe it in beforeAll and skip their assertions when it's unreachable.
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,5 +29,3 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
-        env:
-          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
