@@ -45,6 +45,7 @@ For real analysis the project uses **DeepSeek**: set `LLM_PROVIDER=deepseek` and
 | `npx tsx --env-file=.env.local scripts/smoke-enrich.ts <playId>` | Dev check: add contacts to a play's leads and run the enrichment waterfall |
 | `npx tsx --env-file=.env.local scripts/smoke-drafts.ts <playId>` | Dev check: draft a first touch and a follow-up for a play's leads |
 | `npx tsx --env-file=.env.local scripts/smoke-sequence.ts <playId>` | Dev check: enroll a play's leads, draft and complete step 1, draft step 2 |
+| `npx tsx --env-file=.env.local scripts/smoke-reply.ts <playId>` | Dev check: log a reply on a play's first lead and print the dashboard metrics |
 
 ## Rules this codebase follows
 

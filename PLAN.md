@@ -1,7 +1,7 @@
 # BeaconRadar — MVP Plan (Phase 0)
 
 > Name: **BeaconRadar** (renamed from the working name Origami on 2026-10-15; the folder is still `origami`).
-> Status: **approved 2026-10-15.** Phases 1–7 complete; see the phase table in §9.
+> Status: **approved 2026-10-15.** Phases 1–8 complete; see the phase table in §9.
 
 ## 1. What we're building
 
