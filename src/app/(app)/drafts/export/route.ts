@@ -25,6 +25,6 @@ export async function GET() {
     ...rows.map(({ d, l }) => [l.company, l.person ?? "not found", l.title ?? "not found", l.email ?? "not found", l.emailStatus, d.channel, d.beliefStage, d.status, d.subject ?? "", d.body, l.sourceUrls.join(" "), d.updatedAt.toISOString()]),
   ]);
   return new NextResponse(csv, {
-    headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": 'attachment; filename="origami-drafts.csv"', "cache-control": "no-store" },
+    headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": 'attachment; filename="beaconradar-drafts.csv"', "cache-control": "no-store" },
   });
 }

@@ -61,7 +61,7 @@ describe("SafeFetcher", () => {
       minDelayMs: 0,
       resolve: publicDns,
       fetchImpl: fakeFetch({
-        "https://acme.com/robots.txt": { body: "User-agent: OrigamiBot\nDisallow: /\n\nUser-agent: *\nAllow: /" },
+        "https://acme.com/robots.txt": { body: "User-agent: BeaconRadarBot\nDisallow: /\n\nUser-agent: *\nAllow: /" },
         "https://acme.com/": { body: "x" },
       }),
     });

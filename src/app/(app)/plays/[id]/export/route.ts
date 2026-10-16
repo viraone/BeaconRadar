@@ -23,13 +23,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     loadSuppression(ctx.workspace.id),
   ]);
   const { csv, exported, suppressed } = buildLeadsCsv(leads, suppression);
-  const name = `origami-leads-${play.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || play.id}.csv`;
+  const name = `beaconradar-leads-${play.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || play.id}.csv`;
   return new NextResponse(csv, {
     headers: {
       "content-type": "text/csv; charset=utf-8",
       "content-disposition": `attachment; filename="${name}"`,
-      "x-origami-exported": String(exported),
-      "x-origami-suppressed": String(suppressed),
+      "x-beaconradar-exported": String(exported),
+      "x-beaconradar-suppressed": String(suppressed),
       "cache-control": "no-store",
     },
   });

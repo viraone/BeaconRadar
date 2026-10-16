@@ -4,7 +4,7 @@ Ambiguities resolved with the simplest workable option. Newest at the bottom.
 
 | # | Date | Decision | Why / alternative |
 |---|---|---|---|
-| 1 | 2026-10-13 | Working name "Origami" (workspace folder) instead of `[YOUR_APP_NAME]` | Placeholder was unfilled; rename is a find/replace. |
+| 1 | 2026-10-13 | Working name "BeaconRadar" (workspace folder) instead of `[YOUR_APP_NAME]` | Placeholder was unfilled; rename is a find/replace. |
 | 2 | 2026-10-13 | Supabase local stack (`supabase start`) for both Postgres and Auth | One tool, already installed; Clerk would add a vendor. |
 | 3 | 2026-10-13 | Drizzle over Prisma | No engine binary, SQL-close (row locks, ON CONFLICT for credits). |
 | 4 | 2026-10-13 | Own Postgres job queue (SKIP LOCKED) + `npm run worker` | No extra service/account; swappable behind `enqueue()`. |
@@ -17,7 +17,7 @@ Ambiguities resolved with the simplest workable option. Newest at the bottom.
 | 11 | 2026-10-13 | Opt-out line + postal address appended by code, not the LLM; drafting blocked until sender postal address is set | CAN-SPAM requires both; code guarantees presence. |
 | 12 | 2026-10-13 | Mock enrichment providers only return addresses on the reserved `.example` TLD and are labeled MOCK in the UI | Dev data can never be mistaken for, or sent to, a real person. |
 | 13 | 2026-10-13 | Package manager: npm (pnpm not installed) | Avoids an extra global install. |
-| 14 | 2026-10-13 | The "belief ladder" stages are Origami's own rule. They aren't found in *Founding Sales*. | The source check is in `docs/founding-sales-notes.md`. Your spec is kept, with the label corrected. |
+| 14 | 2026-10-13 | The "belief ladder" stages are BeaconRadar's own rule. They aren't found in *Founding Sales*. | The source check is in `docs/founding-sales-notes.md`. Your spec is kept, with the label corrected. |
 | 15 | 2026-10-13 | "Approve" for an email means it's approved, then copied or opened in a mailto link. No sending provider in v1. | Simplest reading that keeps "no auto-send". A real provider is paid or keyed and needs your OK. |
 | 16 | 2026-10-13 | Replies are logged by hand with Log reply. No inbox reading. | No email or LinkedIn integration exists in v1. |
 | 17 | 2026-10-13 | A lead's belief stage only moves up from a logged reply, and drafts may target at most one stage higher | A code check for "never pitch the solution before the problem is prioritized". |
@@ -65,6 +65,7 @@ Ambiguities resolved with the simplest workable option. Newest at the bottom.
 | 59 | 2026-10-15 | The footer (name, company, postal address, opt-out line) is appended by code after a `--` line and stored as part of the email body; the checks measure the text before the delimiter | What's stored is exactly what gets copied or opened in the mail app; CAN-SPAM content can't be forgotten. |
 | 60 | 2026-10-15 | Drafting is blocked until sender name, company and postal address are set; only the workspace owner can edit them | No footer, no outreach. |
 | 61 | 2026-10-15 | Each draft costs 1 credit, charged even when the checks block it; regenerating discards the old draft and charges again | The model ran; blocked drafts can be edited by hand for free. |
-| 62 | 2026-10-15 | "Approve" marks a draft ready and offers Copy and a mailto link; "Mark as sent" records that the user sent it from their own mailbox. Origami never sends. | Per decision 15; sending remains out of v1. |
+| 62 | 2026-10-15 | "Approve" marks a draft ready and offers Copy and a mailto link; "Mark as sent" records that the user sent it from their own mailbox. BeaconRadar never sends. | Per decision 15; sending remains out of v1. |
 | 63 | 2026-10-15 | LinkedIn connection notes get no footer and may omit the question; LinkedIn messages follow the email rules without the footer | LinkedIn's 300-char cap and its own platform opt-out. |
 | 64 | 2026-10-15 | Suppression entries are added by hand (bulk paste) and, from Phase 8, automatically on an opt-out reply; the check matches email, domain and subdomains at draft and export time | Single list, applied everywhere. |
+| 65 | 2026-10-15 | Project renamed **BeaconRadar** (was the working name Origami). Everything user-facing and internal was renamed: UI, email subject, user agent `BeaconRadarBot`, cookie, CSV filenames, docs. The local Supabase `project_id` stays `origami` and the folder is still `Desktop/origami`. | Your call. The project id names the Docker volumes, so changing it would start an empty local database; the folder is your workspace path. Rename either whenever convenient. |

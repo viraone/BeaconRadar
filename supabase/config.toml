@@ -2,6 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
+# Kept as "origami" on purpose: it names the local Docker volumes. Renaming it would start an empty local database.
 project_id = "origami"
 
 [api]
@@ -255,7 +256,7 @@ otp_expiry = 3600
 # content_path = "./supabase/templates/password_changed_notification.html"
 
 [auth.email.template.magic_link]
-subject = "Sign in to Origami"
+subject = "Sign in to BeaconRadar"
 content_path = "./supabase/templates/magic_link.html"
 
 [auth.sms]

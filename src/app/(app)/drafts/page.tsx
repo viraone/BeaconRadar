@@ -43,7 +43,7 @@ export default async function DraftsPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Drafts</h1>
           <p className="mt-1 text-sm text-muted">
-            Every message is reviewed here before anything leaves. Nothing is sent by Origami: approve, then copy or open in your mail app.
+            Every message is reviewed here before anything leaves. Nothing is sent by BeaconRadar: approve, then copy or open in your mail app.
           </p>
         </div>
         <div className="text-sm">

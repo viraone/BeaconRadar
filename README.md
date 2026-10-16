@@ -1,4 +1,4 @@
-# Origami
+# BeaconRadar
 
 AI lead generation, reviewed by a human at every step. Enter your website, get an editable ideal-customer profile, run "plays" that find real companies and people from licensed sources (every row cites its source), enrich emails, and review every outreach message before anything goes out.
 

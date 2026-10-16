@@ -17,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <header className="border-b border-border bg-card/60">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
           <div className="flex items-center gap-4">
-            <Link href="/profile" className="font-semibold tracking-tight">Origami</Link>
+            <Link href="/profile" className="font-semibold tracking-tight">BeaconRadar</Link>
             <nav className="hidden items-center gap-1 sm:flex">
               <NavLink href="/profile">Profile</NavLink>
               <NavLink href="/plays">Plays</NavLink>

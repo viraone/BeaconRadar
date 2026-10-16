@@ -13,7 +13,7 @@ export default async function LandingPage() {
   return (
     <main className="flex flex-1 flex-col">
       <header className="flex items-center justify-between px-6 py-4">
-        <span className="font-semibold tracking-tight">Origami</span>
+        <span className="font-semibold tracking-tight">BeaconRadar</span>
         <nav className="text-sm">
           {user ? (
             <Link href="/profile" className="text-muted hover:text-foreground">Open app →</Link>
@@ -28,7 +28,7 @@ export default async function LandingPage() {
           Your website in. <span className="text-accent">Leads with sources</span> out.
         </h1>
         <p className="mt-4 text-lg text-muted">
-          Origami reads your site, works out who you sell to, and suggests one-click plays that find real
+          BeaconRadar reads your site, works out who you sell to, and suggests one-click plays that find real
           companies and people from live, licensed sources. Every row cites where it came from. Nothing is
           sent without your review.
         </p>

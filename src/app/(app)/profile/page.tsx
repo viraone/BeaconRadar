@@ -17,7 +17,7 @@ export default async function ProfilePage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Your sites</h1>
         <p className="mt-1 text-sm text-muted">
-          Add a website. Origami reads a few public pages and drafts a company profile and ideal customer profile you can edit.
+          Add a website. BeaconRadar reads a few public pages and drafts a company profile and ideal customer profile you can edit.
         </p>
       </div>
 

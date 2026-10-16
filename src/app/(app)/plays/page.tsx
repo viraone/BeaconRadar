@@ -42,7 +42,7 @@ export default async function PlaysPage() {
       ) : (
         <Card>
           <h2 className="font-medium">Recommend plays</h2>
-          <p className="mt-1 text-sm text-muted">Origami reads the ideal customer profile and proposes 3 to 5 plays. Nothing runs until you approve a play.</p>
+          <p className="mt-1 text-sm text-muted">BeaconRadar reads the ideal customer profile and proposes 3 to 5 plays. Nothing runs until you approve a play.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {profiles.map((p) => (
               <RecommendButton key={p.id} profileId={p.id} label={p.companyName ?? p.domain} disabled={p.status !== "ready"} />

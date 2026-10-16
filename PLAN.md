@@ -1,11 +1,11 @@
-# Origami — MVP Plan (Phase 0)
+# BeaconRadar — MVP Plan (Phase 0)
 
-> Working name: **Origami** (the workspace folder name). It is a placeholder, and renaming it is a find-and-replace.
+> Name: **BeaconRadar** (renamed from the working name Origami on 2026-10-15; the folder is still `origami`).
 > Status: **approved 2026-10-15.** Phases 1–6 complete; see the phase table in §9.
 
 ## 1. What we're building
 
-A user enters their company website. Origami then:
+A user enters their company website. BeaconRadar then:
 
 1. Reads the site (only robots.txt-allowed pages) and infers a **company profile + ICP** that the user can edit.
 2. Recommends **3–5 plays** (one-click campaigns) based on that ICP.
@@ -16,7 +16,7 @@ A user enters their company website. Origami then:
 7. Runs a **founder learning loop**. Every reply and objection is logged per lead, and a dashboard shows contacted, replies, positive replies and meetings. There is no open rate.
 8. Enforces **limits**: 1–2 contacts per company, about 25 sends per sender per day, the suppression list, and an opt-out line on every email.
 
-Background reading for 5–7 is in `docs/founding-sales-notes.md`. Note that the "belief ladder" isn't in *Founding Sales*. We implement it as Origami's own rule, as specified.
+Background reading for 5–7 is in `docs/founding-sales-notes.md`. Note that the "belief ladder" isn't in *Founding Sales*. We implement it as BeaconRadar's own rule, as specified.
 
 Hard rules, enforced in code as well as in prompts:
 - Never fabricate people, emails, or facts. A field that can't be grounded in a fetched source is stored as `null` and rendered as **"not found"**.
@@ -137,7 +137,7 @@ All of these rules live in `src/config/outreach.ts` and are enforced in `src/lib
 - Dates are computed in the workspace's timezone at day level, so "7 days" means the same clock day a week later.
 - Stop conditions are checked before any task is created or shown: a reply was logged, the person opted out, or the person is suppressed. When an enrollment stops, its open tasks are cancelled.
 
-**LinkedIn steps are manual-only.** Origami never fetches, automates or logs in to LinkedIn. The task shows the drafted text, a Copy button, and a plain LinkedIn search link built from the person's name and company. The user opens that link themselves. Leads without a named person can't be enrolled and show "needs a contact".
+**LinkedIn steps are manual-only.** BeaconRadar never fetches, automates or logs in to LinkedIn. The task shows the drafted text, a Copy button, and a plain LinkedIn search link built from the person's name and company. The user opens that link themselves. Leads without a named person can't be enrolled and show "needs a contact".
 
 **Limits.**
 - **Per-company cap.** Enrollment is rejected once a company has `max_contacts_per_company` people in active or completed enrollments. Companies are matched by `company_domain`.
@@ -154,9 +154,9 @@ All of these rules live in `src/config/outreach.ts` and are enforced in `src/lib
 - A fixed footer goes on **every** draft: an opt-out sentence and the sender's postal address, which CAN-SPAM requires. The postal address is collected in workspace settings. Drafts are blocked until it's set.
 - **Suppression list** by email or domain. It applies at draft time and at export time, and suppressed rows are labeled. Users can add entries by hand or paste them in bulk.
 - Opt-outs from any channel are logged with **Log reply** using outcome `opt_out`. That adds the email (or the lead, if there's no email) to the suppression list and stops every enrollment for the person.
-- LinkedIn messages are sent by the user by hand. Origami never automates LinkedIn, which their terms prohibit.
+- LinkedIn messages are sent by the user by hand. BeaconRadar never automates LinkedIn, which their terms prohibit.
 - Only business contact data is stored. Users can delete a lead or a whole play. Every lead has source URLs (provenance) to support data-subject requests.
-- The fetcher identifies itself (`Origami-Bot/0.1 (+contact URL)`), obeys robots.txt, rate-limits per host, enforces a domain denylist (linkedin.com, facebook.com, etc.), and never logs in or runs page JS.
+- The fetcher identifies itself (`BeaconRadarBot/0.1 (+contact URL)`), obeys robots.txt, rate-limits per host, enforces a domain denylist (linkedin.com, facebook.com, etc.), and never logs in or runs page JS.
 
 ## 7. Folder layout
 
@@ -269,7 +269,7 @@ After each phase: a short summary, small commits, and I stop for your review.
 | LinkedIn terms of service | Manual-only steps. No fetching, automation or browser extension. The only LinkedIn link is a search URL the user opens. |
 | Draft checks block good drafts or pass weak ones | Every block shows its reason and the user can edit. Thresholds live in config. Phrase lists are tested both ways. |
 | Replies are logged by hand, so the data depends on the user | Log reply sits one click away on every task and lead, and the dashboard flags enrollments with no update after their last step. Inbox sync is a later feature. |
-| "Belief ladder" isn't from the cited book | It's documented as Origami's own rule (see `docs/founding-sales-notes.md`), so nobody mistakes it for Kazanjy's guidance. |
+| "Belief ladder" isn't from the cited book | It's documented as BeaconRadar's own rule (see `docs/founding-sales-notes.md`), so nobody mistakes it for Kazanjy's guidance. |
 | ATS coverage bias (Greenhouse/Lever/Ashby skew toward tech companies) | Fine for a B2B tech ICP. Other job sources can be added behind the same interface. |
 
 ## 11. Out of scope for v1
@@ -281,6 +281,6 @@ Automated email sending (pending §12 item 5), any LinkedIn automation, inbox or
 1. **Approve the stack and dependency list** in §2 (Supabase local + Drizzle + Postgres queue + Anthropic).
 2. **Search provider:** Tavily or Brave? Mock is used until a key is added.
 3. ~~Anthropic API as the LLM~~ Decided: **DeepSeek** (see §2).
-4. **App name**, or keep "Origami" for now.
+4. ~~App name~~ Decided: **BeaconRadar**.
 5. **Email "Approve".** I've built it as approve, then copy or open in your mail app, with no provider. Do you want real sending from the app in v1? If so, which provider: Gmail API, Resend or SES? That adds a keyed service and domain setup.
-6. **Belief stages.** Keep your 5 stages as Origami's own rule, given that they aren't from *Founding Sales*?
+6. **Belief stages.** Keep your 5 stages as BeaconRadar's own rule, given that they aren't from *Founding Sales*?

@@ -9,7 +9,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { next, error } = await searchParams;
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
-      <Link href="/" className="mb-8 text-sm text-muted hover:text-foreground">← Origami</Link>
+      <Link href="/" className="mb-8 text-sm text-muted hover:text-foreground">← BeaconRadar</Link>
       <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
       <p className="mt-2 text-sm text-muted">We’ll email you a one-time sign-in link. No password.</p>
       <div className="mt-6">

@@ -13,7 +13,7 @@ import robotsParser from "robots-parser";
  *  - per-host politeness delay, size and time caps, no cookies, no JS
  */
 
-export const USER_AGENT_NAME = "OrigamiBot";
+export const USER_AGENT_NAME = "BeaconRadarBot";
 
 export const DENIED_HOST_SUFFIXES = [
   "linkedin.com", "licdn.com",

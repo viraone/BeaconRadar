@@ -40,7 +40,7 @@ export default async function ProfileDetailPage({ params }: { params: Promise<{ 
       {running && (
         <Notice>
           {profile.status === "pending" ? "Queued. " : "Reading the site… "}
-          Origami fetches a few public pages (home, about, product, pricing) while respecting robots.txt, then drafts the profile. This page refreshes itself.
+          BeaconRadar fetches a few public pages (home, about, product, pricing) while respecting robots.txt, then drafts the profile. This page refreshes itself.
         </Notice>
       )}
       {profile.status === "failed" && (
