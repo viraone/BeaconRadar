@@ -22,6 +22,8 @@ Sign-in emails go to the local Mailpit inbox at http://127.0.0.1:55324. Supabase
 
 No API keys are needed to develop: set `LLM_PROVIDER=mock` and the search and enrichment providers default to `mock`.
 
+For real job-board discovery set `SEARCH_PROVIDER=tavily` (or `brave`) with its key; with `mock` the hiring play uses fixture boards labeled MOCK.
+
 For real analysis the project uses **DeepSeek**: set `LLM_PROVIDER=deepseek` and paste your key into `DEEPSEEK_API_KEY` in `.env.local`. The default model is `deepseek-flash`; set `LLM_MODEL=deepseek-v4-pro` for the stronger model. Anthropic is also wired up (`LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`).
 
 ## Scripts
@@ -39,6 +41,7 @@ For real analysis the project uses **DeepSeek**: set `LLM_PROVIDER=deepseek` and
 | `npm run supabase:start` / `supabase:stop` | Local Supabase stack |
 | `npm run worker` | Background job worker (Phase 3) |
 | `npm run seed` | Demo data (Phase 9) |
+| `npx tsx --env-file=.env.local scripts/smoke-plays.ts <profileId>` | Dev check: recommend plays for a profile and run the first hiring play |
 
 ## Rules this codebase follows
 
