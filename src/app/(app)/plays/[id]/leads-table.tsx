@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button, Input, Notice } from "@/components/ui";
 import { deleteLead, enrichLeadsAction, updateLeadContact } from "./lead-actions";
+import { draftForLeadsAction } from "@/app/(app)/drafts/actions";
 
 export type LeadView = {
   id: string;
@@ -46,7 +47,10 @@ export function LeadsTable({ playId, leads, balance, perEmailCost }: { playId: s
         <Button variant="secondary" disabled={pending || withoutEmail === 0} onClick={() => run(() => enrichLeadsAction(playId, []))}>
           Enrich all without email ({withoutEmail})
         </Button>
-        <span className="text-muted">Up to {perEmailCost} credits per lead (2 to find, +1 if verified). Balance: {balance}. Charged only when an email is found.</span>
+        <Button variant="secondary" disabled={pending || selected.size === 0} onClick={() => run(() => draftForLeadsAction(playId, Array.from(selected)))}>
+          Draft email for {selected.size || ""} selected
+        </Button>
+        <span className="text-muted">Enrich: up to {perEmailCost} credits per lead (2 to find, +1 if verified), charged only when found. Draft: 1 credit each. Balance: {balance}.</span>
       </div>
       {notice && <Notice kind={notice.kind}>{notice.text}</Notice>}
 

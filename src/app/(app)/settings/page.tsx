@@ -5,6 +5,9 @@ import { CREDIT_COSTS, PLANS } from "@/config/credits";
 import { db, schema } from "@/lib/db/client";
 import { requireWorkspace, getCreditBalance } from "@/lib/auth/workspace";
 import { Card } from "@/components/ui";
+import { SenderForm } from "./sender-form";
+import { SuppressionForm } from "./suppression-form";
+import { senderIsComplete } from "@/lib/outreach/footer";
 
 export const instant = false;
 
@@ -23,6 +26,7 @@ export default async function SettingsPage() {
       .where(eq(schema.creditLedger.workspaceId, ctx.workspace.id)),
     db.select({ id: schema.plays.id, title: schema.plays.title }).from(schema.plays).where(eq(schema.plays.workspaceId, ctx.workspace.id)),
   ]);
+  const suppression = await db.select().from(schema.suppressionList).where(eq(schema.suppressionList.workspaceId, ctx.workspace.id)).orderBy(desc(schema.suppressionList.createdAt));
   const leadPlay = new Map<string, string>();
   if (ledger.some((r) => r.refType === "lead")) {
     const rows = await db.select({ id: schema.leads.id, playId: schema.leads.playId }).from(schema.leads).where(eq(schema.leads.workspaceId, ctx.workspace.id));
@@ -44,7 +48,7 @@ export default async function SettingsPage() {
             <Row k="Daily send cap" v={String(ctx.workspace.dailySendCap)} />
             <Row k="Contacts per company" v={String(ctx.workspace.maxContactsPerCompany)} />
           </dl>
-          <p className="mt-3 text-xs text-muted">Sender details and the suppression list arrive in Phase 6. Billing isn&apos;t built yet; plans are set by hand.</p>
+          <p className="mt-3 text-xs text-muted">Billing isn&apos;t built yet; plans are set by hand.</p>
         </Card>
         <Card>
           <h2 className="font-medium">Credits</h2>
@@ -63,6 +67,35 @@ export default async function SettingsPage() {
             <Row k="Draft written" v={`${CREDIT_COSTS.draft}`} />
           </dl>
           <p className="mt-3 text-xs text-muted">Charged only for results actually found. Estimates shown before a play runs are upper bounds.</p>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <h2 className="font-medium">Sender details</h2>
+          <p className="mt-1 text-sm text-muted">
+            Goes in the footer of every email draft with the opt-out line.{" "}
+            {senderIsComplete(ctx.workspace) ? "" : "Drafting is blocked until this is filled in."}
+          </p>
+          <div className="mt-3">
+            <SenderForm
+              canEdit={ctx.role === "owner"}
+              initial={{
+                senderName: ctx.workspace.senderName ?? "",
+                senderCompany: ctx.workspace.senderCompany ?? "",
+                senderPostalAddress: ctx.workspace.senderPostalAddress ?? "",
+                dailySendCap: ctx.workspace.dailySendCap,
+                maxContactsPerCompany: ctx.workspace.maxContactsPerCompany,
+              }}
+            />
+          </div>
+        </Card>
+        <Card>
+          <h2 className="font-medium">Suppression list</h2>
+          <p className="mt-1 text-sm text-muted">Emails and domains we never draft to or export. Opt-outs land here automatically.</p>
+          <div className="mt-3">
+            <SuppressionForm rows={suppression.map((r) => ({ id: r.id, email: r.email, domain: r.domain, reason: r.reason, createdAt: r.createdAt.toLocaleDateString() }))} />
+          </div>
         </Card>
       </div>
 
