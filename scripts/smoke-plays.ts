@@ -34,7 +34,7 @@ async function main() {
   const [after] = await db.select().from(schema.plays).where(eq(schema.plays.id, hiring.id)).limit(1);
   const leads = await db.select().from(schema.leads).where(eq(schema.leads.playId, hiring.id));
   console.log("play status:", after.status, "spent:", after.creditsSpent, "error:", after.error);
-  console.log("leads:", JSON.stringify(leads.map((l) => ({ company: l.company, person: l.person, fit: l.fitReason.slice(0, 90), sources: l.sourceUrls })), null, 2));
+  console.log("leads:", JSON.stringify(leads.map((l) => ({ company: l.company, person: l.person, fit: (l.fitReason ?? "").slice(0, 90), sources: l.sourceUrls })), null, 2));
   console.log("balance after:", await getBalance(ws.id));
   console.log("PLAY_ID=" + hiring.id);
 }
