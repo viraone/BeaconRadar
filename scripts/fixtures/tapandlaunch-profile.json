@@ -1,0 +1,17 @@
+{
+  "siteUrl": "https://tapandlaunch.com",
+  "domain": "tapandlaunch.com",
+  "companyName": "TapAndLaunch",
+  "offering": "A no-code builder for progressive web apps (PWAs) with payments, push notifications and member content.",
+  "summary": "TapAndLaunch is a no-code builder for progressive web apps, aimed at restaurants, gyms, shops, venues, clubs and communities. Users start from a template, arrange pages with a drag-and-drop editor against a live phone preview, and publish to a TapAndLaunch address or their own domain; customers open the app from a link or QR code and add it to their home screen. It includes push notifications and email, members-only or paid-tier content, and card payments through the customer's own Stripe account, with a 30-day free trial and a $10/month plan.",
+  "icp": {
+    "industries": ["Restaurants and cafés", "Gyms and studios", "Venues and events", "Retail shops", "Clubs and communities", "Photography, design and art"],
+    "companySizes": ["1-10", "11-50"],
+    "geographies": ["United States", "Canada"],
+    "buyerTitles": ["Restaurant or café owner", "Gym or studio owner", "Shop owner", "Event organizer", "Venue manager", "Marketing manager", "Founder"],
+    "painPoints": ["No budget or coding skills to build an app", "Waiting for App Store or Google Play approval", "Cannot easily reach customers after they install", "Needs to sell products or take bookings online", "Needs member-only or paid-tier content"],
+    "buyingSignals": ["Uses Stripe to accept card payments", "Publicly promotes recurring events, classes or schedules", "Runs a membership or loyalty program", "Hiring a marketing or community manager", "Recently opened a new location or venue"],
+    "disqualifiers": ["Requires a native listing in the App Store or Google Play", "Has an in-house mobile engineering team", "Has no customer audience or member base to notify"]
+  },
+  "sourceUrls": ["https://tapandlaunch.com/", "https://tapandlaunch.com/pricing", "https://tapandlaunch.com/faq"]
+}
