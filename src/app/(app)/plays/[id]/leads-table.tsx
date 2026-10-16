@@ -5,6 +5,7 @@ import { Button, Input, Notice } from "@/components/ui";
 import { deleteLead, enrichLeadsAction, updateLeadContact } from "./lead-actions";
 import { draftForLeadsAction } from "@/app/(app)/drafts/actions";
 import { enrollLeadsAction } from "@/app/(app)/sequences/actions";
+import { LogReply } from "@/components/log-reply";
 
 export type LeadView = {
   id: string;
@@ -126,8 +127,9 @@ export function LeadsTable({ playId, leads, balance, perEmailCost }: { playId: s
                     </div>
                   ))}
                 </td>
-                <td className="px-3 py-2">
-                  <button className="text-xs text-muted underline disabled:opacity-50" disabled={pending} onClick={() => { if (confirm("Remove this lead from the table?")) run(() => deleteLead(l.id, playId)); }}>
+                <td className="space-y-1 px-3 py-2">
+                  <LogReply leadId={l.id} defaultChannel="email" compact />
+                  <button className="block text-xs text-muted underline disabled:opacity-50" disabled={pending} onClick={() => { if (confirm("Remove this lead from the table?")) run(() => deleteLead(l.id, playId)); }}>
                     Remove
                   </button>
                 </td>

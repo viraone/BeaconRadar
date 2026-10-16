@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { STAGE_LABELS, type BeliefStage } from "@/config/outreach";
 import { Button, Card, Input, Notice } from "@/components/ui";
+import { LogReply } from "@/components/log-reply";
 import { editDraft, regenerateDraft, setDraftStatus } from "./actions";
 
 export type DraftView = {
@@ -117,6 +118,9 @@ export function DraftCard({ draft }: { draft: DraftView }) {
           <button className="ml-auto text-xs text-muted underline" disabled={pending} onClick={() => run(() => setDraftStatus(draft.id, "discarded"))}>Discard</button>
         )}
       </div>
+      {(draft.status === "approved" || draft.status === "sent_manually") && (
+        <LogReply leadId={draft.lead.id} defaultChannel={draft.channel as "email" | "linkedin_connect" | "linkedin_message"} compact />
+      )}
     </Card>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { STAGE_LABELS, type BeliefStage } from "@/config/outreach";
 import { Button, Card, Notice } from "@/components/ui";
+import { LogReply } from "@/components/log-reply";
 import { draftTaskAction, markTaskDone, redraftTaskAction, skipTaskAction, stopSequenceAction } from "./actions";
 
 export type TaskView = {
@@ -99,6 +100,7 @@ export function TaskCard({ task, canSend }: { task: TaskView; canSend: boolean }
         <button className="text-xs text-muted underline" disabled={pending} onClick={() => run(() => skipTaskAction(task.id))}>Skip step</button>
         <button className="ml-auto text-xs text-muted underline" disabled={pending} onClick={() => { if (confirm("Stop this sequence for this person?")) run(() => stopSequenceAction(task.enrollmentId)); }}>Stop sequence</button>
       </div>
+      <LogReply leadId={task.lead.id} defaultChannel={task.channel as "email" | "linkedin_connect" | "linkedin_message"} compact />
       {isLinkedIn && <p className="text-xs text-muted">BeaconRadar never touches LinkedIn. Open their profile yourself, paste the note, then mark done.</p>}
     </Card>
   );
