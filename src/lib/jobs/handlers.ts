@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db/client";
 import { analyzeSite } from "@/lib/profile/analyzer";
+import { runPlay } from "@/lib/plays/runner";
 import { registerHandler } from "./queue";
 
 /**
@@ -41,6 +42,12 @@ registerHandler<{ profileId: string }>(JOB_SITE_ANALYSIS, async ({ profileId }) 
       .where(eq(schema.companyProfiles.id, profileId));
     throw e; // let the queue record the failure/backoff too
   }
+});
+
+export const JOB_PLAY_RUN = "play_run";
+
+registerHandler<{ playId: string }>(JOB_PLAY_RUN, async ({ playId }) => {
+  await runPlay(playId);
 });
 
 export const handlersLoaded = true;
