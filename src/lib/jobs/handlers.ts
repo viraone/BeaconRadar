@@ -21,7 +21,7 @@ registerHandler<{ profileId: string }>(JOB_SITE_ANALYSIS, async ({ profileId }) 
   await db.update(schema.companyProfiles).set({ status: "analyzing", error: null, updatedAt: new Date() }).where(eq(schema.companyProfiles.id, profileId));
 
   try {
-    const result = await analyzeSite(profile.siteUrl);
+    const result = await analyzeSite(profile.siteUrl, { workspaceId: profile.workspaceId });
     await db
       .update(schema.companyProfiles)
       .set({

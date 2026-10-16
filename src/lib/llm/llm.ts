@@ -28,6 +28,8 @@ export type JsonRequest<T> = {
   mock: () => T;
   maxTokens?: number;
   effort?: "low" | "medium" | "high";
+  /** For spend tracking; null for calls outside a workspace. */
+  workspaceId?: string | null;
 };
 
 export type JsonResult<T> = {
@@ -234,6 +236,22 @@ class AnthropicLlm implements LlmProvider {
 
 let cached: LlmProvider | undefined;
 
+/** Wraps a provider so every successful call is written to llm_usage (never blocks or throws). */
+function withUsageTracking(inner: LlmProvider): LlmProvider {
+  return {
+    name: inner.name,
+    async generateJson(req) {
+      const result = await inner.generateJson(req);
+      if (inner.name !== "mock") {
+        void import("./usage").then(({ recordUsage }) =>
+          recordUsage({ workspaceId: req.workspaceId ?? null, provider: result.provider, model: result.model, task: req.task, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens }),
+        );
+      }
+      return result;
+    },
+  };
+}
+
 export function getLlm(): LlmProvider {
   if (cached) return cached;
   const e = env();
@@ -251,6 +269,7 @@ export function getLlm(): LlmProvider {
     default:
       cached = new MockLlm();
   }
+  cached = withUsageTracking(cached);
   return cached;
 }
 

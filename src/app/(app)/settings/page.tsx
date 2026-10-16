@@ -8,6 +8,8 @@ import { Card } from "@/components/ui";
 import { SenderForm } from "./sender-form";
 import { SuppressionForm } from "./suppression-form";
 import { senderIsComplete } from "@/lib/outreach/footer";
+import { fetchProviderBalance, loadUsageSummary } from "@/lib/llm/usage";
+import { env } from "@/lib/env";
 
 export const instant = false;
 
@@ -27,6 +29,9 @@ export default async function SettingsPage() {
     db.select({ id: schema.plays.id, title: schema.plays.title }).from(schema.plays).where(eq(schema.plays.workspaceId, ctx.workspace.id)),
   ]);
   const suppression = await db.select().from(schema.suppressionList).where(eq(schema.suppressionList.workspaceId, ctx.workspace.id)).orderBy(desc(schema.suppressionList.createdAt));
+  const [usage, providerBalance] = await Promise.all([loadUsageSummary(ctx.workspace.id, 30), fetchProviderBalance()]);
+  const llmProvider = env().LLM_PROVIDER;
+  const usd = (n: number) => (n < 0.01 && n > 0 ? "<$0.01" : `$${n.toFixed(2)}`);
   const leadPlay = new Map<string, string>();
   if (ledger.some((r) => r.refType === "lead")) {
     const rows = await db.select({ id: schema.leads.id, playId: schema.leads.playId }).from(schema.leads).where(eq(schema.leads.workspaceId, ctx.workspace.id));
@@ -98,6 +103,42 @@ export default async function SettingsPage() {
           </div>
         </Card>
       </div>
+
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="font-medium">Model spend</h2>
+            <p className="mt-1 text-sm text-muted">
+              Provider: <strong>{llmProvider}</strong>. Last 30 days for this workspace. Costs are upper-bound estimates from list prices; the provider&apos;s dashboard is the bill.
+            </p>
+          </div>
+          {providerBalance ? (
+            <div className="text-right text-sm">
+              <div className="text-xs uppercase tracking-wide text-muted">DeepSeek balance (live)</div>
+              <div className="text-2xl font-semibold tabular-nums">${providerBalance.total.toFixed(2)} <span className="text-sm font-normal text-muted">{providerBalance.currency}</span></div>
+              {!providerBalance.available && <div className="text-xs text-red-700 dark:text-red-300">Balance too low for API calls</div>}
+            </div>
+          ) : (
+            llmProvider === "deepseek" && <div className="text-xs text-muted">Live balance unavailable</div>
+          )}
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div><div className="text-xs uppercase tracking-wide text-muted">Calls</div><div className="text-2xl font-semibold tabular-nums">{usage.calls}</div></div>
+          <div><div className="text-xs uppercase tracking-wide text-muted">Tokens</div><div className="text-2xl font-semibold tabular-nums">{(usage.inputTokens + usage.outputTokens).toLocaleString()}</div><div className="text-xs text-muted">{usage.inputTokens.toLocaleString()} in · {usage.outputTokens.toLocaleString()} out</div></div>
+          <div><div className="text-xs uppercase tracking-wide text-muted">Estimated cost</div><div className="text-2xl font-semibold tabular-nums">{usd(usage.estimatedCostUsd)}</div></div>
+        </div>
+        {usage.byTask.length > 0 && (
+          <table className="mt-4 w-full text-sm">
+            <thead className="text-left text-xs uppercase tracking-wide text-muted"><tr><th className="py-1">Task</th><th className="py-1 text-right">Calls</th><th className="py-1 text-right">Tokens</th><th className="py-1 text-right">Est. cost</th></tr></thead>
+            <tbody className="divide-y divide-border">
+              {usage.byTask.map((t) => (
+                <tr key={t.task}><td className="py-1">{t.task.replace(/_/g, " ")}</td><td className="py-1 text-right tabular-nums">{t.calls}</td><td className="py-1 text-right tabular-nums">{t.tokens.toLocaleString()}</td><td className="py-1 text-right tabular-nums">{usd(t.estimatedCostUsd)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {usage.calls === 0 && <p className="mt-3 text-sm text-muted">No model calls recorded for this workspace yet. Calls made before spend tracking was added aren&apos;t counted.</p>}
+      </Card>
 
       <Card className="overflow-x-auto p-0">
         <div className="border-b border-border px-4 py-3">

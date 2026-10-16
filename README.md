@@ -16,7 +16,7 @@ Built for founder-led sales. The outreach rules follow Pete Kazanjy's *Founding 
 | 6. Sequence | `/sequences`, `/tasks` | LinkedIn note now, email 7 days after it's marked done (editable). Today's tasks with Copy, Find on LinkedIn, Mark done. Stops on reply or opt-out. Caps: 1–2 contacts per company, N sends per day. |
 | 7. Learn | `/dashboard` | Log every reply and objection. Contacted, replies, positive, meetings; breakdowns by play, channel, step, stage, objection. No open rate. |
 
-Credits: every action has a cost in `src/config/credits.ts`, charged only for results actually found, never below zero, idempotent on retry. Free plan: 30 rows per table, no CSV export. No billing yet; plans are set by hand.
+Credits: every action has a cost in `src/config/credits.ts`, charged only for results actually found, never below zero, idempotent on retry. Model spend is logged per call (`llm_usage`) with an upper-bound estimate from `src/config/llm-pricing.ts`, and Settings shows it next to the live DeepSeek balance. Free plan: 30 rows per table, no CSV export. No billing yet; plans are set by hand.
 
 ## Run it locally
 
@@ -54,7 +54,7 @@ Sign in with `demo@beaconradar.example`; the magic link lands in the local inbox
 | `npm run supabase:start` / `supabase:stop` | Local Supabase stack |
 | `npm run seed [-- email]` | Demo workspace (re-runnable) |
 | `npm run worker` | Background job worker (required in production; optional locally with `JOBS_INLINE=true`) |
-| `scripts/smoke-*.ts` | Dev checks that exercise plays, enrichment, drafts, sequences and replies against the local DB: `npx tsx --env-file=.env.local scripts/smoke-plays.ts <profileId>` etc. |
+| `scripts/smoke-*.ts` | Dev checks that exercise plays, enrichment, drafts, sequences, replies and model-spend logging against the local DB: `npx tsx --env-file=.env.local scripts/smoke-plays.ts <profileId>` etc. |
 
 ## Architecture
 

@@ -26,7 +26,7 @@ export async function recommendForProfile(profileId: string): Promise<ActionResu
 
   let recs;
   try {
-    recs = await recommendPlays({ companyName: profile.companyName, summary: profile.summary, offering: profile.offering, icp });
+    recs = await recommendPlays({ companyName: profile.companyName, summary: profile.summary, offering: profile.offering, icp, workspaceId: ctx.workspace.id });
   } catch (e) {
     return { error: `Could not get recommendations: ${(e as Error).message}` };
   }

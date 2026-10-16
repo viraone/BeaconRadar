@@ -63,6 +63,7 @@ export async function generateDraft(req: DraftRequest, llm: LlmProvider = getLlm
     schema: outputSchema,
     mock: () => mockDraft(req),
     effort: "medium",
+    workspaceId: req.lead.workspaceId,
   });
   const out = result.data;
   const candidate: DraftCandidate = {

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  numeric,
   index,
   integer,
   jsonb,
@@ -266,3 +267,17 @@ export const jobs = pgTable("jobs", {
   lastError: text("last_error"),
   ...timestamps,
 }, (t) => [index("jobs_claim_idx").on(t.status, t.runAfter)]);
+
+// ---------- LLM usage (spend tracking) ----------
+export const llmUsage = pgTable("llm_usage", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(),
+  model: text("model").notNull(),
+  task: text("task").notNull(),
+  inputTokens: integer("input_tokens").notNull(),
+  outputTokens: integer("output_tokens").notNull(),
+  /** Upper-bound estimate from published list prices, USD. */
+  estimatedCostUsd: numeric("estimated_cost_usd", { precision: 12, scale: 6 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("llm_usage_workspace_idx").on(t.workspaceId, t.createdAt)]);

@@ -19,7 +19,7 @@ async function main() {
   const [ws] = await db.select().from(schema.workspaces).where(eq(schema.workspaces.id, profile.workspaceId)).limit(1);
   console.log("balance before:", await getBalance(ws.id));
 
-  const recs = await recommendPlays({ companyName: profile.companyName, summary: profile.summary, offering: profile.offering, icp: profile.icp ?? emptyIcp() });
+  const recs = await recommendPlays({ companyName: profile.companyName, summary: profile.summary, offering: profile.offering, icp: profile.icp ?? emptyIcp(), workspaceId: ws.id });
   console.log("recommendations:", JSON.stringify(recs.map((r) => ({ type: r.type, title: r.title, params: r.params, runnable: r.runnable })), null, 2));
 
   const rowLimit = PLANS[ws.plan].rowsPerTable;
